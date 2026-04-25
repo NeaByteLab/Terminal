@@ -1,5 +1,5 @@
 import { assert, assertEquals, assertThrows } from '@std/assert'
-import { Terminal } from '@app/index.ts'
+import Terminal from '@app/index.ts'
 
 Deno.test(
   'Terminal.execute - allows RTL unicode characters',
