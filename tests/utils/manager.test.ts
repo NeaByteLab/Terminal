@@ -296,7 +296,7 @@ Deno.test(
     })
     assert(id.startsWith('term_'))
     const retrieved = Utils.Manager.getProcess(id)
-    assertEquals(retrieved?.command, 'echo')
+    assertEquals(retrieved?.command, Helpers.echo)
     Utils.Manager.killProcess(id)
     await new Promise(r => setTimeout(r, 100))
   }
