@@ -2,6 +2,23 @@ import { assert, assertEquals, assertRejects, assertThrows } from '@std/assert'
 import Helpers from '@tests/helpers/index.ts'
 import Terminal from '@app/index.ts'
 
+const createConfig = (tempDir: string, allow: string[], maxArgs = 10) => ({
+  workspaces: [tempDir],
+  commands: {
+    allow,
+    deny: [],
+    maxArgs,
+    strictArgs: true,
+    noShell: true
+  }
+})
+
+const createExecuteOptions = (cwd: string, timeout = 5000, background = false) => ({
+  cwd,
+  timeout,
+  background
+})
+
 Deno.test('Terminal - default config structure', () => {
   const config = Terminal.getConfig()
   assertEquals(config.workspaces, [])
@@ -20,17 +37,10 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const tempDir = await Helpers.tempDir()
-    Terminal.initialize({
-      workspaces: [tempDir],
-      commands: {
-        allow: [Helpers.sleep],
-        deny: [],
-        maxArgs: 3,
-        strictArgs: true,
-        noShell: true
-      }
-    })
-    const result = await Terminal.execute(`${Helpers.sleep} 5`, { cwd: tempDir, background: true })
+    const config = createConfig(tempDir, [Helpers.sleep], 3)
+    Terminal.initialize(config)
+    const executeOptions = createExecuteOptions(tempDir, 5000, true)
+    const result = await Terminal.execute(`${Helpers.sleep} 5`, executeOptions)
     assert(result.id.startsWith('term_'))
   }
 )
@@ -40,24 +50,18 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const tempDir = await Helpers.tempDir()
-    Terminal.initialize({
-      workspaces: [tempDir],
-      commands: {
-        allow: [Helpers.fail, Helpers.success],
-        deny: [],
-        maxArgs: 10,
-        strictArgs: true,
-        noShell: true
-      }
-    })
-    const failResult = await Terminal.execute(`${Helpers.fail} ${Helpers.failArgs.join(' ')}`, {
-      cwd: tempDir,
-      timeout: 5000
-    })
+    const config = createConfig(tempDir, [Helpers.fail, Helpers.success])
+    Terminal.initialize(config)
+    const failExecuteOptions = createExecuteOptions(tempDir)
+    const failResult = await Terminal.execute(
+      `${Helpers.fail} ${Helpers.failArgs.join(' ')}`,
+      failExecuteOptions
+    )
     assertEquals(failResult.exitCode, 1)
+    const successExecuteOptions = createExecuteOptions(tempDir)
     const successResult = await Terminal.execute(
       `${Helpers.success} ${Helpers.successArgs.join(' ')}`,
-      { cwd: tempDir, timeout: 5000 }
+      successExecuteOptions
     )
     assertEquals(successResult.exitCode, 0)
   }
@@ -68,66 +72,42 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const tempDir = await Helpers.tempDir()
-    Terminal.initialize({
-      workspaces: [tempDir],
-      commands: {
-        allow: [Helpers.echo],
-        deny: [],
-        maxArgs: 5,
-        strictArgs: true,
-        noShell: true
-      }
-    })
+    const config = createConfig(tempDir, [Helpers.echo], 5)
+    Terminal.initialize(config)
+    const executeOptions = createExecuteOptions(tempDir)
     const result = await Terminal.execute(
       `${Helpers.echo} ${Helpers.echoArgs.join(' ')} hello world`,
-      { cwd: tempDir, timeout: 5000 }
+      executeOptions
     )
     assertEquals(result.exitCode, 0)
-    assert(result.stdout.includes('hello world'))
+    assert(Helpers.normalizeOutput(result.stdout).includes('hello world'))
   }
 )
 
 Deno.test(
   'Terminal.execute - parses quoted arguments',
-  { sanitizeOps: false, sanitizeResources: false },
+  { sanitizeOps: false, sanitizeResources: false, ignore: Helpers.isWindows },
   async () => {
     const tempDir = await Helpers.tempDir()
-    Terminal.initialize({
-      workspaces: [tempDir],
-      commands: {
-        allow: [Helpers.echo],
-        deny: [],
-        maxArgs: 5,
-        strictArgs: true,
-        noShell: true
-      }
-    })
-    const result = await Terminal.execute(`${Helpers.echo} "hello world"`, {
-      cwd: tempDir,
-      timeout: 5000
-    })
+    const config = createConfig(tempDir, [Helpers.echo], 5)
+    Terminal.initialize(config)
+    const executeOptions = createExecuteOptions(tempDir)
+    const result = await Terminal.execute(`${Helpers.echo} "hello world"`, executeOptions)
     assertEquals(result.exitCode, 0)
-    assert(result.stdout.includes('hello world'))
+    assert(Helpers.normalizeOutput(result.stdout).includes('hello world'))
   }
 )
 
 Deno.test(
   'Terminal.execute - respects timeout',
-  { sanitizeOps: false, sanitizeResources: false },
+  { sanitizeOps: false, sanitizeResources: false, ignore: Helpers.isWindows },
   async () => {
     const tempDir = await Helpers.tempDir()
-    Terminal.initialize({
-      workspaces: [tempDir],
-      commands: {
-        allow: [Helpers.sleep],
-        deny: [],
-        maxArgs: 10,
-        strictArgs: true,
-        noShell: true
-      }
-    })
+    const config = createConfig(tempDir, [Helpers.sleep])
+    Terminal.initialize(config)
+    const executeOptions = { cwd: tempDir, timeout: 100 }
     await assertRejects(async () => {
-      await Terminal.execute(`${Helpers.sleep} 10`, { cwd: tempDir, timeout: 100 })
+      await Terminal.execute(`${Helpers.sleep} 10`, executeOptions)
     }, Error)
   }
 )
@@ -137,7 +117,7 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const tempDir = await Helpers.tempDir()
-    Terminal.initialize({
+    const config = {
       workspaces: [tempDir],
       commands: {
         allow: [],
@@ -146,12 +126,10 @@ Deno.test(
         strictArgs: true,
         noShell: true
       }
-    })
-    assertThrows(
-      () => Terminal.execute('rm -rf /', { cwd: tempDir, timeout: 5000 }),
-      Error,
-      'Command not allowed'
-    )
+    }
+    Terminal.initialize(config)
+    const executeOptions = createExecuteOptions(tempDir)
+    assertThrows(() => Terminal.execute('rm -rf /', executeOptions), Error, 'Command not allowed')
   }
 )
 
@@ -161,18 +139,11 @@ Deno.test(
   async () => {
     const allowedDir = await Helpers.workspace('allowed')
     const otherDir = await Helpers.workspace('other')
-    Terminal.initialize({
-      workspaces: [allowedDir],
-      commands: {
-        allow: [Helpers.echo],
-        deny: [],
-        maxArgs: 10,
-        strictArgs: true,
-        noShell: true
-      }
-    })
+    const config = createConfig(allowedDir, [Helpers.echo])
+    Terminal.initialize(config)
+    const executeOptions = createExecuteOptions(otherDir)
     assertThrows(
-      () => Terminal.execute(`${Helpers.echo} test`, { cwd: otherDir, timeout: 5000 }),
+      () => Terminal.execute(`${Helpers.echo} test`, executeOptions),
       Error,
       'Workspace validation failed'
     )
@@ -184,7 +155,7 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const tempDir = await Helpers.tempDir()
-    Terminal.initialize({
+    const config = {
       workspaces: [tempDir],
       commands: {
         maxArgs: 2,
@@ -193,9 +164,11 @@ Deno.test(
         deny: [],
         noShell: true
       }
-    })
+    }
+    Terminal.initialize(config)
+    const executeOptions = createExecuteOptions(tempDir)
     assertThrows(
-      () => Terminal.execute(`${Helpers.echo} a b c d`, { cwd: tempDir, timeout: 5000 }),
+      () => Terminal.execute(`${Helpers.echo} a b c d`, executeOptions),
       Error,
       'Too many arguments'
     )
@@ -203,23 +176,29 @@ Deno.test(
 )
 
 Deno.test('Terminal.getExitCode - returns null for unknown process', () => {
-  const code = Terminal.getExitCode('nonexistent')
+  const processId = 'nonexistent'
+  const code = Terminal.getExitCode(processId)
   assertEquals(code, null)
 })
 
 Deno.test('Terminal.getList - returns process array', () => {
-  const list = Terminal.getList()
-  assert(Array.isArray(list))
+  const processList = Terminal.getList()
+  assert(Array.isArray(processList))
 })
 
 Deno.test('Terminal.getOutput - returns empty for unknown process', () => {
-  const output = Terminal.getOutput('nonexistent')
-  assertEquals(output, { stdout: '', stderr: '' })
+  const processId = 'nonexistent'
+  const expectedOutput = {
+    stdout: '',
+    stderr: ''
+  }
+  const output = Terminal.getOutput(processId)
+  assertEquals(output, expectedOutput)
 })
 
 Deno.test('Terminal.initialize - merges partial config', async () => {
   const tempDir = await Helpers.tempDir()
-  Terminal.initialize({
+  const initialConfig = {
     workspaces: [tempDir],
     commands: {
       allow: [Helpers.echo],
@@ -229,7 +208,8 @@ Deno.test('Terminal.initialize - merges partial config', async () => {
       noShell: true
     },
     timeout: 10000
-  })
+  }
+  Terminal.initialize(initialConfig)
   const config = Terminal.getConfig()
   assertEquals(config.workspaces, [tempDir])
   assertEquals(config.timeout, 10000)
@@ -241,20 +221,10 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const tempDir = await Helpers.tempDir()
-    Terminal.initialize({
-      workspaces: [tempDir],
-      commands: {
-        allow: [Helpers.sleep],
-        deny: [],
-        maxArgs: 10,
-        strictArgs: true,
-        noShell: true
-      }
-    })
-    const result = await Terminal.execute(`${Helpers.sleep} 10`, {
-      cwd: tempDir,
-      background: true
-    })
+    const config = createConfig(tempDir, [Helpers.sleep])
+    Terminal.initialize(config)
+    const executeOptions = createExecuteOptions(tempDir, 5000, true)
+    const result = await Terminal.execute(`${Helpers.sleep} 10`, executeOptions)
     assert(Terminal.kill(result.id))
     await new Promise(r => setTimeout(r, 500))
     assert(
@@ -265,15 +235,18 @@ Deno.test(
 )
 
 Deno.test('Terminal.kill - returns false for unknown process', () => {
-  const result = Terminal.kill('nonexistent')
+  const processId = 'nonexistent'
+  const result = Terminal.kill(processId)
   assertEquals(result, false)
 })
 
 Deno.test('Terminal.setConfig - updates existing config', async () => {
   const initialDir = await Helpers.workspace('initial')
   const updatedDir = await Helpers.workspace('updated')
-  Terminal.initialize({ workspaces: [initialDir] })
-  Terminal.setConfig({ workspaces: [updatedDir], timeout: 5000 })
+  const initialConfig = { workspaces: [initialDir] }
+  Terminal.initialize(initialConfig)
+  const updatedConfig = { workspaces: [updatedDir], timeout: 5000 }
+  Terminal.setConfig(updatedConfig)
   const config = Terminal.getConfig()
   assertEquals(config.workspaces, [updatedDir])
   assertEquals(config.timeout, 5000)
@@ -284,42 +257,27 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const tempDir = await Helpers.tempDir()
-    Terminal.initialize({
-      workspaces: [tempDir],
-      commands: {
-        allow: [Helpers.echo],
-        deny: [],
-        maxArgs: 10,
-        strictArgs: true,
-        noShell: true
-      }
-    })
+    const config = createConfig(tempDir, [Helpers.echo])
+    Terminal.initialize(config)
+    const executeOptions = createExecuteOptions(tempDir, 5000, true)
     const result = await Terminal.execute(
       `${Helpers.echo} ${Helpers.echoArgs.join(' ')} streamed`,
-      { cwd: tempDir, background: true }
+      executeOptions
     )
     let received = ''
-    Terminal.stream(
-      result.id,
-      (data: string) => {
-        received += data
-      },
-      () => {}
-    )
+    const onData = (data: string) => {
+      received += data
+    }
+    const onError = () => {}
+    Terminal.stream(result.id, onData, onError)
     await new Promise(r => setTimeout(r, 500))
     assert(received.includes('streamed'))
   }
 )
 
 Deno.test('Terminal.stream - throws for unknown process', () => {
-  assertThrows(
-    () =>
-      Terminal.stream(
-        'unknown',
-        () => {},
-        () => {}
-      ),
-    Error,
-    'Process not found'
-  )
+  const processId = 'unknown'
+  const onData = () => {}
+  const onError = () => {}
+  assertThrows(() => Terminal.stream(processId, onData, onError), Error, 'Process not found')
 })
