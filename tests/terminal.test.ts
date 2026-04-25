@@ -22,7 +22,13 @@ Deno.test(
     const tempDir = await Helpers.tempDir()
     Terminal.initialize({
       workspaces: [tempDir],
-      commands: { allow: [Helpers.sleep], maxArgs: 3, deny: [], strictArgs: true, noShell: true }
+      commands: {
+        allow: [Helpers.sleep],
+        deny: [],
+        maxArgs: 3,
+        strictArgs: true,
+        noShell: true
+      }
     })
     const result = await Terminal.execute(`${Helpers.sleep} 5`, { cwd: tempDir, background: true })
     assert(result.id.startsWith('term_'))
@@ -64,7 +70,13 @@ Deno.test(
     const tempDir = await Helpers.tempDir()
     Terminal.initialize({
       workspaces: [tempDir],
-      commands: { allow: [Helpers.echo], deny: [], maxArgs: 5, strictArgs: true, noShell: true }
+      commands: {
+        allow: [Helpers.echo],
+        deny: [],
+        maxArgs: 5,
+        strictArgs: true,
+        noShell: true
+      }
     })
     const result = await Terminal.execute(
       `${Helpers.echo} ${Helpers.echoArgs.join(' ')} hello world`,
@@ -82,7 +94,13 @@ Deno.test(
     const tempDir = await Helpers.tempDir()
     Terminal.initialize({
       workspaces: [tempDir],
-      commands: { allow: [Helpers.echo], deny: [], maxArgs: 5, strictArgs: true, noShell: true }
+      commands: {
+        allow: [Helpers.echo],
+        deny: [],
+        maxArgs: 5,
+        strictArgs: true,
+        noShell: true
+      }
     })
     const result = await Terminal.execute(`${Helpers.echo} "hello world"`, {
       cwd: tempDir,
@@ -100,7 +118,13 @@ Deno.test(
     const tempDir = await Helpers.tempDir()
     Terminal.initialize({
       workspaces: [tempDir],
-      commands: { allow: [Helpers.sleep], deny: [], maxArgs: 10, strictArgs: true, noShell: true }
+      commands: {
+        allow: [Helpers.sleep],
+        deny: [],
+        maxArgs: 10,
+        strictArgs: true,
+        noShell: true
+      }
     })
     await assertRejects(async () => {
       await Terminal.execute(`${Helpers.sleep} 10`, { cwd: tempDir, timeout: 100 })
@@ -115,7 +139,13 @@ Deno.test(
     const tempDir = await Helpers.tempDir()
     Terminal.initialize({
       workspaces: [tempDir],
-      commands: { allow: [], deny: ['rm'], maxArgs: 10, strictArgs: true, noShell: true }
+      commands: {
+        allow: [],
+        deny: ['rm'],
+        maxArgs: 10,
+        strictArgs: true,
+        noShell: true
+      }
     })
     assertThrows(
       () => Terminal.execute('rm -rf /', { cwd: tempDir, timeout: 5000 }),
@@ -133,7 +163,13 @@ Deno.test(
     const otherDir = await Helpers.workspace('other')
     Terminal.initialize({
       workspaces: [allowedDir],
-      commands: { allow: [Helpers.echo], deny: [], maxArgs: 10, strictArgs: true, noShell: true }
+      commands: {
+        allow: [Helpers.echo],
+        deny: [],
+        maxArgs: 10,
+        strictArgs: true,
+        noShell: true
+      }
     })
     assertThrows(
       () => Terminal.execute(`${Helpers.echo} test`, { cwd: otherDir, timeout: 5000 }),
@@ -150,7 +186,13 @@ Deno.test(
     const tempDir = await Helpers.tempDir()
     Terminal.initialize({
       workspaces: [tempDir],
-      commands: { maxArgs: 2, strictArgs: true, allow: [Helpers.echo], deny: [], noShell: true }
+      commands: {
+        maxArgs: 2,
+        strictArgs: true,
+        allow: [Helpers.echo],
+        deny: [],
+        noShell: true
+      }
     })
     assertThrows(
       () => Terminal.execute(`${Helpers.echo} a b c d`, { cwd: tempDir, timeout: 5000 }),
@@ -179,7 +221,13 @@ Deno.test('Terminal.initialize - merges partial config', async () => {
   const tempDir = await Helpers.tempDir()
   Terminal.initialize({
     workspaces: [tempDir],
-    commands: { allow: [Helpers.echo], deny: [], maxArgs: 10, strictArgs: true, noShell: true },
+    commands: {
+      allow: [Helpers.echo],
+      deny: [],
+      maxArgs: 10,
+      strictArgs: true,
+      noShell: true
+    },
     timeout: 10000
   })
   const config = Terminal.getConfig()
@@ -195,7 +243,13 @@ Deno.test(
     const tempDir = await Helpers.tempDir()
     Terminal.initialize({
       workspaces: [tempDir],
-      commands: { allow: [Helpers.sleep], deny: [], maxArgs: 10, strictArgs: true, noShell: true }
+      commands: {
+        allow: [Helpers.sleep],
+        deny: [],
+        maxArgs: 10,
+        strictArgs: true,
+        noShell: true
+      }
     })
     const result = await Terminal.execute(`${Helpers.sleep} 10`, {
       cwd: tempDir,
@@ -232,7 +286,13 @@ Deno.test(
     const tempDir = await Helpers.tempDir()
     Terminal.initialize({
       workspaces: [tempDir],
-      commands: { allow: [Helpers.echo], deny: [], maxArgs: 10, strictArgs: true, noShell: true }
+      commands: {
+        allow: [Helpers.echo],
+        deny: [],
+        maxArgs: 10,
+        strictArgs: true,
+        noShell: true
+      }
     })
     const result = await Terminal.execute(
       `${Helpers.echo} ${Helpers.echoArgs.join(' ')} streamed`,
