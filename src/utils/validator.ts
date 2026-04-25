@@ -6,6 +6,8 @@ import type * as Types from '@interfaces/index.ts'
  * @description Security checks for execution.
  */
 export class Validator {
+  /** Pattern for null byte detection */
+  private static readonly nullByteRegex: RegExp = /\x00/
   /** Pattern for path traversal detection */
   private static readonly pathTraversalRegex: RegExp = /\.\.(?:\/|\\)|\.\.$/
   /** Pattern for shell metacharacters */
@@ -73,6 +75,12 @@ export class Validator {
     }
     for (let i = 0; i < args.length; i++) {
       const currentArg = args[i]!
+      if (this.nullByteRegex.test(currentArg)) {
+        return {
+          valid: false,
+          error: `Null bytes detected in argument ${i}`
+        }
+      }
       if (this.shellMetacharRegex.test(currentArg)) {
         return {
           valid: false,

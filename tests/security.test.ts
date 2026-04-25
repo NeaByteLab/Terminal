@@ -465,7 +465,11 @@ Deno.test(
       workspaces: ['/tmp'],
       commands: { allow: ['echo'], deny: [], maxArgs: 10, strictArgs: true, noShell: true }
     })
-    assertThrows(() => Terminal.execute('echo test\x00danger'), Error, 'null bytes')
+    assertThrows(
+      () => Terminal.execute('echo test\x00danger', { cwd: '/tmp', timeout: 5000 }),
+      Error,
+      'Null bytes'
+    )
     const result = await Terminal.execute('echo test\x01danger', { cwd: '/tmp', timeout: 5000 })
     assert(result.id.startsWith('term_'))
   }
@@ -491,7 +495,7 @@ Deno.test(
       workspaces: ['/tmp'],
       commands: { allow: ['cat'], deny: [], maxArgs: 10, strictArgs: true, noShell: true }
     })
-    assertThrows(() => Terminal.execute('cat /etc/passwd\x00.txt'), Error, 'null bytes')
+    assertThrows(() => Terminal.execute('cat /etc/passwd\x00.txt'), Error, 'Null bytes')
   }
 )
 
