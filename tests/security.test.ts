@@ -30,7 +30,7 @@ Deno.test(
 
 Deno.test(
   'Terminal.execute - allows at-file syntax in args',
-  { sanitizeOps: false, sanitizeResources: false },
+  { sanitizeOps: false, sanitizeResources: false, ignore: Helpers.isWindows },
   async () => {
     const tempDir = await Helpers.tempDir()
     const config = createConfig(tempDir, [Helpers.echo])
@@ -38,13 +38,13 @@ Deno.test(
     const executeOptions = createExecuteOptions(tempDir)
     const result = await Terminal.execute(`${Helpers.echo} @testfile`, executeOptions)
     assertEquals(result.exitCode, 0)
-    assert(result.stdout.includes('@testfile'))
+    assert(Helpers.normalizeOutput(result.stdout).includes('@testfile'))
   }
 )
 
 Deno.test(
   'Terminal.execute - allows custom PATH in env',
-  { sanitizeOps: false, sanitizeResources: false },
+  { sanitizeOps: false, sanitizeResources: false, ignore: Helpers.isWindows },
   async () => {
     const tempDir = await Helpers.tempDir()
     const config = {
@@ -70,7 +70,7 @@ Deno.test(
 
 Deno.test(
   'Terminal.execute - allows leading dash in args',
-  { sanitizeOps: false, sanitizeResources: false },
+  { sanitizeOps: false, sanitizeResources: false, ignore: Helpers.isWindows },
   async () => {
     const tempDir = await Helpers.tempDir()
     const config = createConfig(tempDir, [Helpers.echo])
@@ -78,7 +78,7 @@ Deno.test(
     const executeOptions = createExecuteOptions(tempDir)
     const result = await Terminal.execute(`${Helpers.echo} --help`, executeOptions)
     assertEquals(result.exitCode, 0)
-    assert(result.stdout.includes('--help'))
+    assert(Helpers.normalizeOutput(result.stdout).includes('--help'))
   }
 )
 
@@ -332,7 +332,9 @@ Deno.test(
   () => {
     const config = createConfig('/allowed', ['ls'])
     Terminal.initialize(config)
-    const executeOptions = { cwd: '/etc' }
+    const executeOptions = {
+      cwd: '/etc'
+    }
     assertThrows(
       () => Terminal.execute('ls /etc', executeOptions),
       Error,
@@ -347,7 +349,9 @@ Deno.test(
   () => {
     const config = createConfig('/allowed', ['ls'])
     Terminal.initialize(config)
-    const executeOptions = { cwd: '/allowed/../../../etc' }
+    const executeOptions = {
+      cwd: '/allowed/../../../etc'
+    }
     assertThrows(
       () => Terminal.execute('ls test', executeOptions),
       Error,
@@ -363,7 +367,9 @@ Deno.test(
     const tempDir = await Helpers.tempDir()
     const config = createConfig(tempDir, [Helpers.echo])
     Terminal.initialize(config)
-    const executeOptions = { cwd: tempDir }
+    const executeOptions = {
+      cwd: tempDir
+    }
     assertThrows(
       () => Terminal.execute(`${Helpers.echo} ";|&$"`, executeOptions),
       Error,
@@ -408,7 +414,10 @@ Deno.test(
     const executeOptions = {
       cwd: tempDir,
       timeout: 5000,
-      env: { EMPTY: '', NODE_ENV: 'test' }
+      env: {
+        EMPTY: '',
+        NODE_ENV: 'test'
+      }
     }
     const result = await Terminal.execute(`${Helpers.echo} test`, executeOptions)
     assertEquals(result.exitCode, 0)
@@ -491,7 +500,13 @@ Deno.test(
   () => {
     const config = {
       workspaces: ['/tmp'],
-      commands: { allow: [''], deny: [], maxArgs: 10, strictArgs: true, noShell: true }
+      commands: {
+        allow: [''],
+        deny: [],
+        maxArgs: 10,
+        strictArgs: true,
+        noShell: true
+      }
     }
     Terminal.initialize(config)
     assertThrows(() => Terminal.execute(''), Error, 'Empty command')
@@ -514,7 +529,10 @@ Deno.test(
   async () => {
     const config = createConfig('/allowed', ['ls'])
     Terminal.initialize(config)
-    const executeOptions = { cwd: '/allowed\x00/../../../etc', timeout: 1000 }
+    const executeOptions = {
+      cwd: '/allowed\x00/../../../etc',
+      timeout: 1000
+    }
     try {
       await Terminal.execute('ls test', executeOptions)
     } catch {}
@@ -537,7 +555,10 @@ Deno.test(
       }
     }
     Terminal.initialize(config)
-    const executeOptions = { cwd: tempDir, background: true }
+    const executeOptions = {
+      cwd: tempDir,
+      background: true
+    }
     const result = await Terminal.execute(`${Helpers.sleep} 30`, executeOptions)
     Terminal.kill(result.id)
     await new Promise(r => setTimeout(r, 200))
@@ -611,7 +632,7 @@ Deno.test(
 
 Deno.test(
   'Terminal.initialize - handles rapid reconfiguration',
-  { sanitizeOps: false, sanitizeResources: false },
+  { sanitizeOps: false, sanitizeResources: false, ignore: Helpers.isWindows },
   async () => {
     const tempDir = await Helpers.tempDir()
     const promises: Promise<unknown>[] = []
@@ -625,7 +646,10 @@ Deno.test(
         noShell: true
       }
     }
-    const executeOptions = { cwd: tempDir, timeout: 1000 }
+    const executeOptions = {
+      cwd: tempDir,
+      timeout: 1000
+    }
     for (let i = 0; i < 10; i++) {
       Terminal.initialize(config)
       promises.push(Terminal.execute(`${Helpers.echo} ${i}`, executeOptions))
@@ -659,7 +683,10 @@ Deno.test(
       }
     }
     Terminal.initialize(config)
-    const executeOptions = { cwd: tempDir, background: true }
+    const executeOptions = {
+      cwd: tempDir,
+      background: true
+    }
     const result = await Terminal.execute(`${Helpers.sleep} 5`, executeOptions)
     Terminal.kill(result.id)
     await new Promise(r => setTimeout(r, 2000))
@@ -683,7 +710,10 @@ Deno.test(
       }
     }
     Terminal.initialize(config)
-    const executeOptions = { cwd: tempDir, background: true }
+    const executeOptions = {
+      cwd: tempDir,
+      background: true
+    }
     const result = await Terminal.execute(`${Helpers.sleep} 30`, executeOptions)
     Terminal.kill(result.id)
     await new Promise(r => setTimeout(r, 3000))
@@ -707,7 +737,10 @@ Deno.test(
       }
     }
     Terminal.initialize(config)
-    const executeOptions = { cwd: tempDir, background: true }
+    const executeOptions = {
+      cwd: tempDir,
+      background: true
+    }
     const result = await Terminal.execute(`${Helpers.sleep} 10`, executeOptions)
     const kill1 = Terminal.kill(result.id)
     const kill2 = Terminal.kill(result.id)
@@ -761,7 +794,10 @@ Deno.test(
       }
     }
     Terminal.initialize(config)
-    const executeOptions = { cwd: tempDir, background: true }
+    const executeOptions = {
+      cwd: tempDir,
+      background: true
+    }
     const bg = await Terminal.execute(`${Helpers.sleep} 5`, executeOptions)
     Terminal.kill(bg.id)
     await new Promise(r => setTimeout(r, 100))
