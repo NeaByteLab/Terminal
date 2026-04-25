@@ -1,8 +1,4 @@
 export default class Helpers {
-  static readonly isLinux = Deno.build.os === 'linux'
-  static readonly isMac = Deno.build.os === 'darwin'
-  static readonly isWindows = Deno.build.os === 'windows'
-
   static get cat(): string {
     return this.isWindows ? 'type' : 'cat'
   }
@@ -23,20 +19,24 @@ export default class Helpers {
     return this.isWindows ? ['/c', 'exit', '1'] : []
   }
 
-  static resolve(...segments: string[]): string {
-    if (this.isWindows) {
-      const joined = segments.join('\\')
-      return joined.startsWith('C:') ? joined : `C:\\${joined.replace(/^\//, '')}`
-    }
-    return '/' + segments.join('/').replace(/^\//, '')
+  static get isLinux(): boolean {
+    return Deno.build.os === 'linux'
+  }
+
+  static get isMac(): boolean {
+    return Deno.build.os === 'darwin'
+  }
+
+  static get isWindows(): boolean {
+    return Deno.build.os === 'windows'
   }
 
   static get sleep(): string {
     return this.isWindows ? 'timeout' : 'sleep'
   }
 
-  static sleepArgs(seconds: number): string[] {
-    return this.isWindows ? [`/t`, `${seconds}`] : [`${seconds}`]
+  static get spawnOptions(): { shell: boolean } {
+    return { shell: this.isWindows }
   }
 
   static get success(): string {
@@ -47,13 +47,38 @@ export default class Helpers {
     return this.isWindows ? ['/c', 'exit', '0'] : []
   }
 
+  static joinPath(base: string, ...segments: string[]): string {
+    const separator = this.isWindows ? '\\' : '/'
+    return segments.reduce((path, segment) => `${path}${separator}${segment}`, base)
+  }
+
+  static normalizeOutput(output: string): string {
+    if (this.isWindows) {
+      return output.replace(/\r\n/g, '\n').trim()
+    }
+    return output
+  }
+
+  static resolve(...segments: string[]): string {
+    if (this.isWindows) {
+      const joined = segments.join('\\')
+      return joined.startsWith('C:') ? joined : `C:\\${joined.replace(/^\//, '')}`
+    }
+    return '/' + segments.join('/').replace(/^\//, '')
+  }
+
+  static sleepArgs(seconds: number): string[] {
+    return this.isWindows ? [`/t`, `${seconds}`] : [`${seconds}`]
+  }
+
   static async tempDir(): Promise<string> {
     return await Deno.makeTempDir()
   }
 
   static async workspace(name: string): Promise<string> {
     const base = await this.tempDir()
-    const path = `${base}/${name}`
+    const separator = this.isWindows ? '\\' : '/'
+    const path = `${base}${separator}${name}`
     await Deno.mkdir(path, { recursive: true })
     return path
   }
