@@ -3,27 +3,46 @@ import Helpers from '@tests/helpers/index.ts'
 import * as Utils from '@app/utils/index.ts'
 
 Deno.test('Utils.Validator.filterEnvironment - allow list only', () => {
-  const env = { NODE_ENV: 'test', PATH: '/bin', HOME: '/root', SECRET: 'value' }
+  const env = {
+    NODE_ENV: 'test',
+    PATH: '/bin',
+    HOME: '/root',
+    SECRET: 'value'
+  }
   const result = Utils.Validator.filterEnvironment(env, ['NODE_ENV', 'PATH'], [])
-  assertEquals(result, { NODE_ENV: 'test', PATH: '/bin' })
+  const expected = {
+    NODE_ENV: 'test',
+    PATH: '/bin'
+  }
+  assertEquals(result, expected)
 })
 
 Deno.test('Utils.Validator.filterEnvironment - deny list blocks', () => {
-  const env = { SAFE: 'yes', SECRET: 'no', SSH_KEY: 'private' }
+  const env = {
+    SAFE: 'yes',
+    SECRET: 'no',
+    SSH_KEY: 'private'
+  }
   const result = Utils.Validator.filterEnvironment(env, [], ['SECRET', 'SSH_*'])
-  assertEquals(result, { SAFE: 'yes' })
+  const expected = { SAFE: 'yes' }
+  assertEquals(result, expected)
 })
 
 Deno.test('Utils.Validator.filterEnvironment - deny overrides allow', () => {
   const env = { BOTH: 'value' }
   const result = Utils.Validator.filterEnvironment(env, ['BOTH'], ['BOTH'])
-  assertEquals(result, {})
+  const expected = {}
+  assertEquals(result, expected)
 })
 
 Deno.test('Utils.Validator.filterEnvironment - undefined values excluded', () => {
-  const env: Record<string, string | undefined> = { DEFINED: 'value', UNDEFINED: undefined }
+  const env: Record<string, string | undefined> = {
+    DEFINED: 'value',
+    UNDEFINED: undefined
+  }
   const result = Utils.Validator.filterEnvironment(env, ['DEFINED', 'UNDEFINED'], [])
-  assertEquals(result, { DEFINED: 'value' })
+  const expected = { DEFINED: 'value' }
+  assertEquals(result, expected)
 })
 
 Deno.test('Utils.Validator.hasPathTraversal - detects traversal patterns', () => {
@@ -112,7 +131,7 @@ Deno.test('Utils.Validator.validateCommand - wildcard pattern', () => {
 
 Deno.test('Utils.Validator.validateWorkspace - allowed workspace', async () => {
   const workspaceBase = await Helpers.workspace('test1')
-  const projectPath = `${workspaceBase}/project`
+  const projectPath = Helpers.joinPath(workspaceBase, 'project')
   await Deno.mkdir(projectPath, { recursive: true })
   const result = Utils.Validator.validateWorkspace(projectPath, [workspaceBase])
   assert(result.valid)
@@ -126,7 +145,7 @@ Deno.test('Utils.Validator.validateWorkspace - empty workspaces allows any', asy
 
 Deno.test('Utils.Validator.validateWorkspace - nested path allowed', async () => {
   const workspaceBase = await Helpers.workspace('test2')
-  const nestedPath = `${workspaceBase}/a/b/c`
+  const nestedPath = Helpers.joinPath(workspaceBase, 'a', 'b', 'c')
   await Deno.mkdir(nestedPath, { recursive: true })
   const result = Utils.Validator.validateWorkspace(nestedPath, [workspaceBase])
   assert(result.valid)
