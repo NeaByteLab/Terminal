@@ -142,7 +142,11 @@ export class Validator {
     const resolvedPath = this.resolvePath(cwd)
     for (const workspace of allowedWorkspaces) {
       const resolvedWorkspace = this.resolvePath(workspace)
-      if (resolvedPath === resolvedWorkspace || resolvedPath.startsWith(resolvedWorkspace + '/')) {
+      const separator = Deno.build.os === 'windows' ? '\\' : '/'
+      if (
+        resolvedPath === resolvedWorkspace ||
+        resolvedPath.startsWith(resolvedWorkspace + separator)
+      ) {
         return { valid: true, resolvedPath: cwd }
       }
     }
