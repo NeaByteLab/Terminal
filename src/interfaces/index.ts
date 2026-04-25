@@ -1,0 +1,6 @@
+export type * from '@interfaces/command.ts'
+export type * from '@interfaces/config.ts'
+export type * from '@interfaces/output.ts'
+export type * from '@interfaces/process.ts'
+export type * from '@interfaces/terminal.ts'
+export type * from '@interfaces/validation.ts'
