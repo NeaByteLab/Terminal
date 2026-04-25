@@ -8,26 +8,58 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-04-25
+None
+
+## [0.1.0] - 2026-04-26
 
 ### Added
 
 - Initial release of @neabyte/terminal
-- Terminal class with execute, kill, getOutput, getList, stream methods
-- Manager class for process lifecycle and registry with unique IDs
-- Validator class with ACL pattern matching and wildcard support
-- Command whitelist/denylist for controlling allowed commands
-- Workspace sandboxing restricting execution to allowed directories
-- Environment variable filtering with allow/deny patterns
-- Real-time output streaming with callback support
-- Timeout-based automatic process termination
-- Shell injection protection via metacharacter detection
-- Path traversal prevention in arguments and paths
-- SIGTERM to SIGKILL escalation for reliable process termination
-- AbortController integration for cancellation support
-- TypeScript interfaces for configuration and process types
-- Security test suite covering injection and bypass attempts
-- Functional test suite for process management
+- Terminal class with static methods:
+  - `execute()` - Execute command with security validation
+  - `kill()` - Terminate running process
+  - `getOutput()` - Retrieve captured stdout/stderr
+  - `getList()` - List all tracked processes
+  - `getExitCode()` - Get process exit code
+  - `stream()` - Attach real-time output callbacks
+  - `initialize()` - Configure security policies
+  - `getConfig()` - Get current configuration
+  - `setConfig()` - Update configuration dynamically
+- Manager class for process lifecycle:
+  - Process registry with unique IDs (`term_<uuid>`)
+  - Background execution support (non-blocking)
+  - `killAllProcesses()` - Bulk termination
+  - `isProcessRunning()` - Status checking
+  - `setProcessTimeout()` - Per-process timeout scheduling
+  - Auto-cleanup 5s after process exit
+- Validator class for security:
+  - ACL pattern matching with wildcards (`*`)
+  - Deny-first priority (deny overrides allow)
+  - Command whitelist/denylist
+  - Workspace path validation with traversal detection
+  - Environment variable filtering (allow/deny patterns)
+  - Argument count limiting (`maxArgs`)
+  - Shell metacharacter detection (`;`, `|`, `&`, etc.)
+  - Path traversal prevention (`../`, `..\`)
+  - Null byte injection protection
+- Command execution features:
+  - Quoted argument parsing (single and double quotes)
+  - Per-command timeout override
+  - Real-time streaming callbacks (`onStdout`, `onStderr`, `onExit`)
+  - SIGTERM to SIGKILL escalation (2s grace period)
+  - AbortController cancellation support
+  - `shell: false` direct execution (no shell interpolation)
+  - `detached: false` for parent group tracking
+- TypeScript interfaces:
+  - `TerminalConfig` - Complete configuration types
+  - `ExecuteOptions` - Per-command options
+  - `ExecuteResult` - Execution return type
+  - `ProcessInfo` - Process metadata
+  - `ValidationResult` - Validation return types
+- Test suites:
+  - Security tests (injection, traversal, bypass attempts)
+  - Functional tests (process management, execution)
+  - Validator unit tests (patterns, environment, workspace)
 
 ### Security
 
