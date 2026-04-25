@@ -1,0 +1,73 @@
+{
+  "name": "@neabyte/terminal",
+  "version": "0.1.0",
+  "description": "Secure command sandbox preventing AI destructive code deletions",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "unbuild --minify",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "rm -rf dist && npm run build"
+  },
+  "keywords": [
+    "agent-protection",
+    "ai-agents",
+    "ai-safety",
+    "allowlist",
+    "child-process",
+    "command-execution",
+    "command-sandbox",
+    "deno",
+    "destructive-command-blocking",
+    "denylist",
+    "goal-frustration-collapse",
+    "llm-tools",
+    "nodejs",
+    "path-traversal-prevention",
+    "process-management",
+    "security-validation",
+    "shell-injection-protection",
+    "terminal-security",
+    "typescript",
+    "workspace-sandboxing"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "unbuild": "^3.6.1"
+  },
+  "author": {
+    "name": "NeaByteLab",
+    "email": "me@neabyte.com",
+    "url": "https://github.com/NeaByteLab"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NeaByteLab/Terminal.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NeaByteLab/Terminal/issues"
+  },
+  "homepage": "https://github.com/NeaByteLab/Terminal#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "CHANGELOG.md",
+    "dist/**/*",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
