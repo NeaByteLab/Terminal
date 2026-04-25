@@ -1,5 +1,6 @@
 import { assert, assertEquals } from '@std/assert'
 import { spawn } from 'node:child_process'
+import Helpers from '@tests/helpers/index.ts'
 import * as Utils from '@app/utils/index.ts'
 
 Deno.test(
@@ -7,11 +8,14 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const abortController = new AbortController()
-    const childProcess = spawn('echo', ['test'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.echo, [...Helpers.echoArgs, 'test'], {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const id = Utils.Manager.registerProcess({
       command: 'test',
       args: [],
-      cwd: '/tmp',
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: null,
@@ -34,11 +38,14 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const abortController = new AbortController()
-    const childProcess = spawn('echo', ['test'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.echo, [...Helpers.echoArgs, 'test'], {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const id = Utils.Manager.registerProcess({
       command: 'test',
       args: [],
-      cwd: '/tmp',
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: null,
@@ -74,11 +81,14 @@ Deno.test(
   async () => {
     const before = Utils.Manager.getAllProcesses().length
     const abortController = new AbortController()
-    const childProcess = spawn('echo', ['test'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.echo, [...Helpers.echoArgs, 'test'], {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const id = Utils.Manager.registerProcess({
       command: 'test',
       args: [],
-      cwd: '/tmp',
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: null,
@@ -106,11 +116,14 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const abortController = new AbortController()
-    const childProcess = spawn('sleep', ['1'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.sleep, Helpers.sleepArgs(1), {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const id = Utils.Manager.registerProcess({
-      command: 'sleep',
-      args: ['1'],
-      cwd: '/tmp',
+      command: Helpers.sleep,
+      args: Helpers.sleepArgs(1),
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: null,
@@ -132,11 +145,14 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const abortController = new AbortController()
-    const childProcess = spawn('sleep', ['2'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.sleep, Helpers.sleepArgs(2), {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const id = Utils.Manager.registerProcess({
-      command: 'sleep',
-      args: ['2'],
-      cwd: '/tmp',
+      command: Helpers.sleep,
+      args: Helpers.sleepArgs(2),
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: null,
@@ -159,13 +175,16 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const abortController = new AbortController()
-    const childProcess = spawn('echo', ['hello'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.echo, [...Helpers.echoArgs, 'hello'], {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const id = Utils.Manager.generateProcessId()
     Utils.Manager.registerProcess({
       id,
-      command: 'echo',
-      args: ['hello'],
-      cwd: '/tmp',
+      command: Helpers.echo,
+      args: [...Helpers.echoArgs, 'hello'],
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: 0,
@@ -197,11 +216,14 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const abortController = new AbortController()
-    const childProcess = spawn('sleep', ['1'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.sleep, Helpers.sleepArgs(1), {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const id = Utils.Manager.registerProcess({
-      command: 'sleep',
-      args: ['1'],
-      cwd: '/tmp',
+      command: Helpers.sleep,
+      args: Helpers.sleepArgs(1),
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: null,
@@ -222,11 +244,14 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const abortController = new AbortController()
-    const childProcess = spawn('sleep', ['10'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.sleep, Helpers.sleepArgs(10), {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const id = Utils.Manager.registerProcess({
-      command: 'sleep',
-      args: ['10'],
-      cwd: '/tmp',
+      command: Helpers.sleep,
+      args: Helpers.sleepArgs(10),
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: null,
@@ -252,11 +277,14 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const abortController = new AbortController()
-    const childProcess = spawn('echo', ['hello'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.echo, [...Helpers.echoArgs, 'hello'], {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const id = Utils.Manager.registerProcess({
-      command: 'echo',
-      args: ['hello'],
-      cwd: '/tmp',
+      command: Helpers.echo,
+      args: [...Helpers.echoArgs, 'hello'],
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: null,
@@ -279,13 +307,16 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const abortController = new AbortController()
-    const childProcess = spawn('echo', ['test'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.echo, [...Helpers.echoArgs, 'test'], {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const customId = 'custom_test_id'
     const id = Utils.Manager.registerProcess({
       id: customId,
-      command: 'echo',
-      args: ['test'],
-      cwd: '/tmp',
+      command: Helpers.echo,
+      args: [...Helpers.echoArgs, 'test'],
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: null,
@@ -310,11 +341,14 @@ Deno.test(
   { sanitizeOps: false, sanitizeResources: false },
   async () => {
     const abortController = new AbortController()
-    const childProcess = spawn('sleep', ['10'], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const tempDir = await Helpers.tempDir()
+    const childProcess = spawn(Helpers.sleep, Helpers.sleepArgs(10), {
+      stdio: ['ignore', 'pipe', 'pipe']
+    })
     const id = Utils.Manager.registerProcess({
-      command: 'sleep',
-      args: ['10'],
-      cwd: '/tmp',
+      command: Helpers.sleep,
+      args: Helpers.sleepArgs(10),
+      cwd: tempDir,
       startTime: new Date(),
       background: false,
       exitCode: null,
