@@ -1,4 +1,5 @@
 import { assert, assertEquals } from '@std/assert'
+import Helpers from '@tests/helpers/index.ts'
 import * as Utils from '@app/utils/index.ts'
 
 Deno.test('Utils.Validator.filterEnvironment - allow list only', () => {
@@ -109,31 +110,40 @@ Deno.test('Utils.Validator.validateCommand - wildcard pattern', () => {
   assert(Utils.Validator.validateCommand('node-v20', config))
 })
 
-Deno.test('Utils.Validator.validateWorkspace - allowed workspace', () => {
-  const result = Utils.Validator.validateWorkspace('/workspace1/project', ['/workspace1'])
-  assert(result.valid)
-  assertEquals(result.resolvedPath, '/workspace1/project')
-})
-
-Deno.test('Utils.Validator.validateWorkspace - empty workspaces allows any', () => {
-  const result = Utils.Validator.validateWorkspace('/any/path', [])
-  assert(result.valid)
-  assertEquals(result.resolvedPath, '/any/path')
-})
-
-Deno.test('Utils.Validator.validateWorkspace - nested path allowed', () => {
-  const result = Utils.Validator.validateWorkspace('/workspace1/a/b/c', ['/workspace1'])
+Deno.test('Utils.Validator.validateWorkspace - allowed workspace', async () => {
+  const workspaceBase = await Helpers.workspace('test1')
+  const projectPath = `${workspaceBase}/project`
+  await Deno.mkdir(projectPath, { recursive: true })
+  const result = Utils.Validator.validateWorkspace(projectPath, [workspaceBase])
   assert(result.valid)
 })
 
-Deno.test('Utils.Validator.validateWorkspace - path outside workspace', () => {
-  const result = Utils.Validator.validateWorkspace('/malicious/path', ['/workspace1'])
+Deno.test('Utils.Validator.validateWorkspace - empty workspaces allows any', async () => {
+  const anyPath = await Helpers.tempDir()
+  const result = Utils.Validator.validateWorkspace(anyPath, [])
+  assert(result.valid)
+})
+
+Deno.test('Utils.Validator.validateWorkspace - nested path allowed', async () => {
+  const workspaceBase = await Helpers.workspace('test2')
+  const nestedPath = `${workspaceBase}/a/b/c`
+  await Deno.mkdir(nestedPath, { recursive: true })
+  const result = Utils.Validator.validateWorkspace(nestedPath, [workspaceBase])
+  assert(result.valid)
+})
+
+Deno.test('Utils.Validator.validateWorkspace - path outside workspace', async () => {
+  const allowedWorkspace = await Helpers.workspace('allowed')
+  const outsidePath = await Helpers.workspace('outside')
+  const result = Utils.Validator.validateWorkspace(outsidePath, [allowedWorkspace])
   assert(!result.valid)
   assert(result.error?.includes('Workspace not allowed'))
 })
 
-Deno.test('Utils.Validator.validateWorkspace - undefined cwd uses first workspace', () => {
-  const result = Utils.Validator.validateWorkspace(undefined, ['/workspace1', '/workspace2'])
+Deno.test('Utils.Validator.validateWorkspace - undefined cwd uses first workspace', async () => {
+  const workspace1 = await Helpers.workspace('ws1')
+  const workspace2 = await Helpers.workspace('ws2')
+  const result = Utils.Validator.validateWorkspace(undefined, [workspace1, workspace2])
   assert(result.valid)
-  assertEquals(result.resolvedPath, '/workspace1')
+  assertEquals(result.resolvedPath, workspace1)
 })
