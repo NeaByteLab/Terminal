@@ -11,8 +11,9 @@ Secure command execution with Access Control Lists for AI protection.
 3. [Patterns Cheatsheet](./patterns-cheatsheet.md) - Quick reference for command patterns
 4. [Security](./security.md) - ACL, threat model, best practices
 5. [Examples](./examples.md) - Real-world integration examples
-6. [API Reference](./api-reference.md) - Complete method documentation
-7. [Common Errors](./common-errors.md) - Troubleshooting guide
+6. [Interpreter Usage](./interpreter-usage.md) - Running Deno, Python, Node.js safely
+7. [API Reference](./api-reference.md) - Complete method documentation
+8. [Common Errors](./common-errors.md) - Troubleshooting guide
 
 ## Quick Links
 
